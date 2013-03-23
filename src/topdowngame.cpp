@@ -7,7 +7,7 @@ using namespace CapEngine;
 using namespace TopDown;
 using namespace std;
 
-TopDownGame::TopDownGame() : sp_map(nullptr) {}
+TopDownGame::TopDownGame() : sp_map(nullptr), speed(250.0) {}
 
 void TopDownGame::init(){
   // get Logger
@@ -58,15 +58,14 @@ void TopDownGame::mainLoop(){
     if(eventDispatcher->hasEvents()){
 	eventDispatcher->flushQueue();
     }
-    
-    
+
     //update
     timeStep.updateStep();
+    updateMovement();
     
     //render
     Rect rect = calcMapDrawArea();
     vManager->drawSurface(0, 0, sp_map->surface, &rect);
-    
     // refresh screen
     vManager->drawScreen();
     timeStep.renderStep();
@@ -81,21 +80,40 @@ void TopDownGame::receiveEvent(const SDL_Event* event, CapEngine::Time* time){
     quit = true;
   }
   
-  // handle screen movement
-  if(event->type == SDL_KEYUP){
+  else if(event->type == SDL_KEYUP){
     SDLKey ksym = ((SDL_KeyboardEvent*)event)->keysym.sym;
     switch(ksym){
     case SDLK_UP:
-      mapPosition.y--;
+      keyboard.keyMap[Keyboard::CAP_KEYUP].state = Keyboard::CAP_UNPRESSED;
       break;
     case SDLK_DOWN:
-      mapPosition.y++;
+      keyboard.keyMap[Keyboard::CAP_KEYDOWN].state = Keyboard::CAP_UNPRESSED;      
       break;
     case SDLK_LEFT:
-      mapPosition.x--;
+      keyboard.keyMap[Keyboard::CAP_KEYLEFT].state = Keyboard::CAP_UNPRESSED;
       break;
     case SDLK_RIGHT:
-      mapPosition.x++;
+      keyboard.keyMap[Keyboard::CAP_KEYRIGHT].state = Keyboard::CAP_UNPRESSED;
+      break;
+    default:
+      break;
+    }
+  }
+
+  else if(event->type == SDL_KEYDOWN){
+    SDLKey ksym = ((SDL_KeyboardEvent*)event)->keysym.sym;
+    switch(ksym){
+    case SDLK_UP:
+      keyboard.keyMap[Keyboard::CAP_KEYUP].state = Keyboard::CAP_PRESSED;
+      break;
+    case SDLK_DOWN:
+      keyboard.keyMap[Keyboard::CAP_KEYDOWN].state = Keyboard::CAP_PRESSED;      
+      break;
+    case SDLK_LEFT:
+      keyboard.keyMap[Keyboard::CAP_KEYLEFT].state = Keyboard::CAP_PRESSED;
+      break;
+    case SDLK_RIGHT:
+      keyboard.keyMap[Keyboard::CAP_KEYRIGHT].state = Keyboard::CAP_PRESSED;
       break;
     default:
       break;
@@ -106,16 +124,35 @@ void TopDownGame::receiveEvent(const SDL_Event* event, CapEngine::Time* time){
 
 Rect TopDownGame::calcMapDrawArea(){
     Rect rect;
-    if((sp_map->width - mapPosition.x) < screenConfig.width){
-      mapPosition.x = mapPosition.x - (screenConfig.width - (sp_map->width - mapPosition.x));
-    }
-    if((sp_map->height - mapPosition.y) < screenConfig.height){
-      mapPosition.y = mapPosition.y - (screenConfig.height - ( sp_map->height - mapPosition.y));
-    }
     rect.x = mapPosition.x;
     rect.y = mapPosition.y;
     rect.w = screenConfig.width;
     rect.h = screenConfig.height;
 
     return rect;
+}
+
+void TopDownGame::updateMovement(){
+  real increment = timeStep.lastTimeStep / 1000.0 * speed;
+  if(keyboard.keyMap[Keyboard::CAP_KEYUP].state == Keyboard::CAP_PRESSED){
+    mapPosition.y += increment;
+  }
+  if(keyboard.keyMap[Keyboard::CAP_KEYDOWN].state == Keyboard::CAP_PRESSED){
+    mapPosition.y -= increment;
+  }
+  if(keyboard.keyMap[Keyboard::CAP_KEYLEFT].state == Keyboard::CAP_PRESSED){
+    mapPosition.x += increment;
+  }
+  if(keyboard.keyMap[Keyboard::CAP_KEYRIGHT].state == Keyboard::CAP_PRESSED){
+    mapPosition.x -= increment;
+  }
+
+  // validate location
+  if((sp_map->width - mapPosition.x) < screenConfig.width){
+    mapPosition.x = mapPosition.x - (screenConfig.width - (sp_map->width - mapPosition.x));
+  }
+  if((sp_map->height - mapPosition.y) < screenConfig.height){
+    mapPosition.y = mapPosition.y - (screenConfig.height - ( sp_map->height - mapPosition.y));
+  }
+
 }

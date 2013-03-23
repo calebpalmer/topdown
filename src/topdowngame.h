@@ -25,11 +25,12 @@ namespace TopDown{
     CapEngine::Vector mapPosition;
     CapEngine::real speed;
     CapEngine::TimeStep timeStep;
+    CapEngine::Keyboard keyboard;
 
     void mainLoop();
     void receiveEvent(const SDL_Event* event, CapEngine::Time* time);
     CapEngine::Rect calcMapDrawArea();
-
+    void updateMovement();
   };
 }
 
