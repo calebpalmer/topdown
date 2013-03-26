@@ -7,9 +7,12 @@ using namespace CapEngine;
 using namespace TopDown;
 using namespace std;
 
-TopDownGame::TopDownGame() : sp_map(nullptr), speed(250.0) {}
+TopDownGame::TopDownGame() : sp_map(nullptr)
+			   , hero("res/hero.png"), speed(250.0) {}
 
 void TopDownGame::init(){
+  quit = false;
+  
   // get Logger
   logger = &(Logger::getInstance());
   logger->currentLevel = LOGLEVEL;
@@ -30,17 +33,27 @@ void TopDownGame::init(){
   eventDispatcher->subscribe(this, systemEvent);
   eventDispatcher->subscribe(this, keyboardEvent);
   logger->log("Events subscribed", Logger::CDEBUG);
-
+  
 }
 
 void TopDownGame::start(){
   vManager->initSystem(screenConfig);
+
+  // initialize resources
+
+  //initialize keyboard map
+  keyboard.keyMap[Keyboard::CAP_KEYUP].state = Keyboard::CAP_UNPRESSED;
+  keyboard.keyMap[Keyboard::CAP_KEYDOWN].state = Keyboard::CAP_UNPRESSED;
+  keyboard.keyMap[Keyboard::CAP_KEYLEFT].state = Keyboard::CAP_UNPRESSED;
+  keyboard.keyMap[Keyboard::CAP_KEYRIGHT].state = Keyboard::CAP_UNPRESSED;
 
   // load map and set position
   string mapPath = "res/map1.cem";
   sp_map.reset(new Map2D(mapPath));
   mapPosition.x = sp_map->width / 2;
   mapPosition.y = sp_map->height / 2;
+
+  hero.initialize();
 
   mainLoop();
 }
@@ -61,11 +74,11 @@ void TopDownGame::mainLoop(){
 
     //update
     timeStep.updateStep();
-    updateMovement();
+    update();
     
     //render
-    Rect rect = calcMapDrawArea();
-    vManager->drawSurface(0, 0, sp_map->surface, &rect);
+    render();
+
     // refresh screen
     vManager->drawScreen();
     timeStep.renderStep();
@@ -77,6 +90,7 @@ void TopDownGame::mainLoop(){
 // IEventSubscriber virtual function implementation
 void TopDownGame::receiveEvent(const SDL_Event* event, CapEngine::Time* time){
   if(event->type == SDL_QUIT){
+    Logger::getInstance().log("User chosen quit", Logger::CDEBUG);
     quit = true;
   }
   
@@ -135,16 +149,29 @@ Rect TopDownGame::calcMapDrawArea(){
 void TopDownGame::updateMovement(){
   real increment = timeStep.lastTimeStep / 1000.0 * speed;
   if(keyboard.keyMap[Keyboard::CAP_KEYUP].state == Keyboard::CAP_PRESSED){
-    mapPosition.y += increment;
+    mapPosition.y -= increment;
+    hero.setState(HERO_WALKING);
   }
   if(keyboard.keyMap[Keyboard::CAP_KEYDOWN].state == Keyboard::CAP_PRESSED){
-    mapPosition.y -= increment;
+    mapPosition.y += increment;
+    hero.setState(HERO_WALKING);
   }
   if(keyboard.keyMap[Keyboard::CAP_KEYLEFT].state == Keyboard::CAP_PRESSED){
-    mapPosition.x += increment;
+    mapPosition.x -= increment;
+    hero.direction.x = -1.0;
+    hero.setState(HERO_WALKING);
   }
   if(keyboard.keyMap[Keyboard::CAP_KEYRIGHT].state == Keyboard::CAP_PRESSED){
-    mapPosition.x -= increment;
+    mapPosition.x += increment;
+    hero.direction.x = 1.0;
+    hero.setState(HERO_WALKING);
+  }
+  
+  if(keyboard.keyMap[Keyboard::CAP_KEYRIGHT].state == Keyboard::CAP_UNPRESSED &&
+     keyboard.keyMap[Keyboard::CAP_KEYLEFT].state == Keyboard::CAP_UNPRESSED &&
+     keyboard.keyMap[Keyboard::CAP_KEYUP].state == Keyboard::CAP_UNPRESSED &&
+     keyboard.keyMap[Keyboard::CAP_KEYDOWN].state == Keyboard::CAP_UNPRESSED){
+    hero.setState(HERO_STILL);
   }
 
   // validate location
@@ -155,4 +182,28 @@ void TopDownGame::updateMovement(){
     mapPosition.y = mapPosition.y - (screenConfig.height - ( sp_map->height - mapPosition.y));
   }
 
+}
+void TopDownGame::render(){
+  
+  // render map
+    Rect rect = calcMapDrawArea();
+    vManager->drawSurface(0, 0, sp_map->surface, &rect);
+
+    // render ultimate ninja hero
+    real x;
+    real y;
+    real w;
+    real h;
+    Surface* heroSurface = hero.getSpriteSurface(x, y, w, h);
+    rect.x = x;
+    rect.y =  y;
+    rect.w = w;
+    rect.h = h;
+    vManager->drawSurface(screenConfig.width/2.0,  screenConfig.height/2.0, heroSurface, &rect); 
+    
+}
+
+void TopDownGame::update(){
+  updateMovement();
+  hero.update(timeStep.lastTimeStep);
 }

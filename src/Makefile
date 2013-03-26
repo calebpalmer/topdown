@@ -11,11 +11,11 @@ LIBS=
 
 # (setq compile-command "(cd ~/Projects/games/topdown/src && make)")
 
-#Application
-topdown: topdown.o topdowngame.o
-	$(CPP) $(CFLAGS) -o topdown topdown.o topdowngame.o libcapengine.so $(LIBS)
+objects = topdown.o topdowngame.o hero.o
 
-objects = topdown.o topdowngame.o
+#Application
+topdown: $(objects)
+	$(CPP) $(CFLAGS) -o topdown $(objects) libcapengine.so $(LIBS)
 
 all: $(objects)
 

@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "CapEngine.h"
+#include "hero.h"
 
 namespace TopDown{
 
@@ -23,6 +24,7 @@ namespace TopDown{
     bool quit;
     std::unique_ptr<CapEngine::Map2D> sp_map;
     CapEngine::Vector mapPosition;
+    Hero hero;
     CapEngine::real speed;
     CapEngine::TimeStep timeStep;
     CapEngine::Keyboard keyboard;
@@ -31,6 +33,8 @@ namespace TopDown{
     void receiveEvent(const SDL_Event* event, CapEngine::Time* time);
     CapEngine::Rect calcMapDrawArea();
     void updateMovement();
+    void render();
+    void update();
   };
 }
 
