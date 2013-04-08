@@ -46,7 +46,7 @@ Rectangle Hero::getBoundingRectangle() const{
 
   return rect;
 }
-Surface* Hero::getSpriteSurface(real& x, real& y, real& w,real& h ) const{
+Surface* Hero::getSpriteSurface(int& x, int& y, int& w, int& h ) const{
 
   if(surface == nullptr){
     throw runtime_error("Hero has not been initialized");
@@ -111,4 +111,12 @@ void Hero::setState(HeroState state){
   if(currentState == HERO_WALKING  and state == HERO_STILL){
     lastFrameSwitch = 0.0;
   }
+}
+
+int Hero::getWidth(){
+  return spriteSheet.width;
+}
+
+int Hero::getHeight(){
+  return spriteSheet.height;
 }

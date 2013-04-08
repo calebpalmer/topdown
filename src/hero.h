@@ -40,10 +40,12 @@ namespace TopDown{
     Hero(const std::string& filePath);
     ~Hero();
     void initialize();
-    CapEngine::Surface*  getSpriteSurface(CapEngine::real& x, CapEngine::real& y, CapEngine::real& w, CapEngine::real& h) const;
+    CapEngine::Surface*  getSpriteSurface(int& x, int& y, int& w, int& h) const;
     CapEngine::Rectangle getBoundingRectangle() const;
     void update(CapEngine::real timestep);
     void setState(HeroState state);
+    int getWidth();
+    int getHeight();
 
     CapEngine::Vector direction;
     CapEngine::Vector position;
