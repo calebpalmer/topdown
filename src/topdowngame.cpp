@@ -23,13 +23,14 @@ void TopDownGame::init(){
   logger->log("current directory is set to " + getCurrentDir(), Logger::CDEBUG);
 
   // start video
-  vManager.reset(&(VideoManager::getInstance()));
+  vManager= &VideoManager::getInstance();
   screenConfig.width = 640;
   screenConfig.height = 480;
   screenConfig.pDepth = 16;
+  screenConfig.opengl = false;
 
   // setup events
-  eventDispatcher.reset(new EventDispatcher());
+  eventDispatcher = &EventDispatcher::getInstance();
   eventDispatcher->subscribe(this, systemEvent);
   eventDispatcher->subscribe(this, keyboardEvent);
   logger->log("Events subscribed", Logger::CDEBUG);
@@ -96,6 +97,7 @@ void TopDownGame::receiveEvent(const SDL_Event* event, CapEngine::Time* time){
   }
   
   else if(event->type == SDL_KEYUP){
+    // update the Keyboard structure
     SDLKey ksym = ((SDL_KeyboardEvent*)event)->keysym.sym;
     switch(ksym){
     case SDLK_UP:
@@ -116,6 +118,7 @@ void TopDownGame::receiveEvent(const SDL_Event* event, CapEngine::Time* time){
   }
 
   else if(event->type == SDL_KEYDOWN){
+    // update the Keyboard structure
     SDLKey ksym = ((SDL_KeyboardEvent*)event)->keysym.sym;
     switch(ksym){
     case SDLK_UP:
@@ -134,7 +137,6 @@ void TopDownGame::receiveEvent(const SDL_Event* event, CapEngine::Time* time){
       break;
     }
   }
-  delete event;
 }
 
 Rect TopDownGame::calcMapDrawArea(){

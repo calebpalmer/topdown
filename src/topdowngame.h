@@ -11,8 +11,8 @@ namespace TopDown{
   class TopDownGame : public IEventSubscriber {
   public:
     struct CapEngine::Screen_t screenConfig;
-    std::unique_ptr<CapEngine::VideoManager> vManager;
-    std::unique_ptr<CapEngine::EventDispatcher> eventDispatcher;
+    CapEngine::VideoManager* vManager;
+    CapEngine::EventDispatcher* eventDispatcher;
     CapEngine::Logger* logger;
     
     TopDownGame();
