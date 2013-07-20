@@ -1,5 +1,5 @@
 #include <iostream>
-#include <iostream>
+#include <sstream>
 
 #include "topdowngame.h"
 
@@ -50,6 +50,7 @@ void TopDownGame::start(){
   // load map and set position
   string mapPath = "res/map1.cem";
   sp_map.reset(new Map2D(mapPath));
+  // TODO should change this so that the map position depends on where the hero currently is
   mapPosition.x = sp_map->width / 2;
   mapPosition.y = sp_map->height / 2;
 
@@ -90,6 +91,7 @@ void TopDownGame::mainLoop(){
 }
 
 // IEventSubscriber virtual function implementation
+// Handles Quit event and updates keyboard map of key states
 void TopDownGame::receiveEvent(const SDL_Event* event, CapEngine::Time* time){
   if(event->type == SDL_QUIT){
     Logger::getInstance().log("User chosen quit", Logger::CDEBUG);
@@ -150,6 +152,36 @@ Rect TopDownGame::calcMapDrawArea(){
 }
 
 void TopDownGame::updateMovement(){
+  // Algorithm:
+  // Get displacement scalar values
+  // if keyup is pressed
+  //      subtract increment from map y value
+  //      set translation vector to ( 0 -1*increment 0)
+  //      add hero position with translation vector
+  //      set hero to walking
+  // if keydown is pressed
+  //     add increment to map y value
+  //     set translation vector to (0 1*increment 0)
+  //     add hero positon with translation vector
+  //   set hero to walking
+  // if keyleft is pressed
+  //      subtract increment from map x value
+  //      set translation vector = (-1*increment 0 0 )
+  //      add hero position with translaction vector
+  //      set hero to walking
+  //      set hero direction vector to (-1 0 0 ) 
+  // if keyright is pressed
+  //      add increment from map x value
+  //      set translation vector = (increment 0 0 )
+  //      add hero position with translation vector
+  //      set hero to walking
+  //      set hero direction vector to (1 0 0 ) 
+  // Check to see if hero is still
+  // Validate heros position within the map:
+  //      if postion.x < 0, position.x = 0
+  //      if position.x > map width, position.x = map width
+  //      if position.y < 0, position.y = 0
+  //      if position.y > map height, position.y = map height
   real increment = timeStep.lastTimeStep / 1000.0 * speed;
   Vector translation;
   
@@ -212,52 +244,55 @@ void TopDownGame::updateMovement(){
 
 
 }
+
 void TopDownGame::render(){
-  // validate map draw position
+  // validate map draw position, hero position is based on center
   Vector heroTopLeft;
-  heroTopLeft.x = hero.position.x - (hero.getWidth() / 2);
-  heroTopLeft.y = hero.position.y - (hero.getHeight() / 2);
+  heroTopLeft.x = hero.position.x - ((double)hero.getWidth() / 2.0);
+  heroTopLeft.y = hero.position.y - ((double)hero.getHeight() / 2.0);
 
   // hero is not in center of map
-  if(heroTopLeft.x - (screenConfig.width / 2) < 0 ||
-     sp_map->width - (heroTopLeft.x + hero.getWidth()) < (screenConfig.width / 2) ||
-     heroTopLeft.y - (screenConfig.height / 2) < 0 ||
-     sp_map->height - (heroTopLeft.y + hero.getHeight()) < (screenConfig.height /2)){
+  if(heroTopLeft.x - ((double)screenConfig.width / 2.0) < 0 ||
+     sp_map->width - (heroTopLeft.x + hero.getWidth()) < ((double)screenConfig.width / 2.0) ||
+     heroTopLeft.y - ((double)screenConfig.height / 2.0) < 0 ||
+     sp_map->height - (heroTopLeft.y + hero.getHeight()) < ((double)screenConfig.height /2.0)){
 
     Rect mapRect;
     Rect heroRect;
+
     // Draw map
     // // Is map drawn to the left or the right or neither
+
     // map all the way to the left
-    if(heroTopLeft.x - (screenConfig.width / 2) < 0){
+    if(heroTopLeft.x - (screenConfig.width / 2.0) < 0){
       mapRect.x = 0.0;
-      heroRect.x = hero.position.x - (hero.getWidth() / 2);
+      heroRect.x = hero.position.x - (hero.getWidth() / 2.0);
     }
     // map all the way to the right
-    else if(sp_map->width - (heroTopLeft.x + hero.getWidth()) < (screenConfig.width / 2)){
+    else if(sp_map->width - (heroTopLeft.x + hero.getWidth()) < (screenConfig.width / 2.0)){
       mapRect.x = sp_map->width - screenConfig.width;
-      heroRect.x = screenConfig.width - (sp_map->width - hero.position.x) - (hero.getWidth() / 2); 
+      heroRect.x = screenConfig.width - (sp_map->width - hero.position.x) - (hero.getWidth() / 2.0); 
     }
     else{
-      mapRect.x = hero.position.x - (screenConfig.width / 2);
-      //heroRect.x = hero.position.x - (hero.getWidth() / 2);
-      heroRect.x = (screenConfig.width / 2) - (hero.getWidth() / 2);
+      mapRect.x = hero.position.x - (screenConfig.width / 2.0);
+      //heroRect.x = hero.position.x - (hero.getWidth() / 2.0);
+      heroRect.x = (screenConfig.width / 2.0) - (hero.getWidth() / 2.0);
     }
 
     // map all the way to the top
-    if(heroTopLeft.y - (screenConfig.height / 2) < 0){
+    if(heroTopLeft.y - ((double)screenConfig.height / 2.0) < 0){
       mapRect.y = 0.0;
-      heroRect.y = hero.position.y - (hero.getHeight() / 2);
+      heroRect.y = hero.position.y - (hero.getHeight() / 2.0);
     }
     //map all the way to the bottom
-    else if(sp_map->height - (heroTopLeft.y + hero.getHeight()) < (screenConfig.height /2)){
+    else if(sp_map->height - (heroTopLeft.y + hero.getHeight()) < ((double)screenConfig.height /2.0)){
       mapRect.y = sp_map->height - screenConfig.height;
-      heroRect.y = screenConfig.height - (sp_map->height - hero.position.y) - (hero.getHeight() / 2);
+      heroRect.y = screenConfig.height - (sp_map->height - hero.position.y) - (hero.getHeight() / 2.0);
     }
     else{
-      mapRect.y = (hero.position.y) - (hero.getHeight() / 2) - (screenConfig.height / 2);
-      //      heroRect.y = hero.position.y - (hero.getHeight() / 2);
-      heroRect.y = (screenConfig.height / 2) - (hero.getHeight() / 2);
+      mapRect.y = (hero.position.y) -  (screenConfig.height / 2.0);
+      //      heroRect.y = hero.position.y - (hero.getHeight() / 2.0);
+      heroRect.y = (screenConfig.height / 2.0) - (hero.getHeight() / 2.0);
     }
 
     mapRect.w = screenConfig.width;
@@ -282,8 +317,8 @@ void TopDownGame::render(){
     // render map
     //Rect rect = calcMapDrawArea();  // Map is drawn relative to player
     Rect rect;
-    rect.x = hero.position.x - (screenConfig.width / 2);
-    rect.y = hero.position.y - (screenConfig.height / 2);
+    rect.x = hero.position.x - (screenConfig.width / 2.0);
+    rect.y = hero.position.y - (screenConfig.height / 2.0);
     rect.w = screenConfig.width;
     rect.y = screenConfig.height;
     vManager->drawSurface(0, 0, sp_map->surface, &rect);
@@ -295,12 +330,19 @@ void TopDownGame::render(){
     rect.y = y;
     rect.w = w;
     rect.h = h;
-    vManager->drawSurface(screenConfig.width/2.0,  screenConfig.height/2.0, heroSurface, &rect); 
+    vManager->drawSurface((screenConfig.width/2.0) - (rect.w / 2.0),  (screenConfig.height/2.0) - (rect.y / 2.0) , heroSurface, &rect); 
   }
+  logger = &(Logger::getInstance());
+  ostringstream message;
+  message << "Hero position: (" << hero.position.x << ", " << hero.position.y << ")" << endl
+	  << "HeroTopLeft: (" << heroTopLeft.x << ", " << heroTopLeft.y << ")" << endl
+	  << " Hero bottom Right: (" << (heroTopLeft.x + hero.getWidth()) << ", "
+	  << (heroTopLeft.y + hero.getHeight()) << ")" << endl << endl;
+  logger->log(message.str(), Logger::CDEBUG);  
 }
  
 
 void TopDownGame::update(){
-  updateMovement();
-  hero.update(timeStep.lastTimeStep);
+  updateMovement();  // updates the heros position within map and moving state
+  hero.update(timeStep.lastTimeStep);  // this just updates the heros frame
 }

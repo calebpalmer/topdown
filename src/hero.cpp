@@ -10,7 +10,6 @@ Hero::Hero(const string& filePath){
   spriteSheet.filepath = filePath;
   spriteSheet.width = 32;
   spriteSheet.height = 32;
-  spriteSheet.numSprites = 2;
   spriteSheet.rows = 3;
   spriteSheet.cols = 2;
 
@@ -46,6 +45,7 @@ Rectangle Hero::getBoundingRectangle() const{
 
   return rect;
 }
+
 Surface* Hero::getSpriteSurface(int& x, int& y, int& w, int& h ) const{
 
   if(surface == nullptr){
@@ -65,7 +65,6 @@ void Hero::initialize(){
   if(!videoManager.initialized){
     throw CapEngineException("Unable to load surface.  Video not initialized");
   }
-
   // check existence of file path
   if(!fileExists(spriteSheet.filepath)){
     throw CapEngineException("Invalid path: " + spriteSheet.filepath);
@@ -75,6 +74,7 @@ void Hero::initialize(){
 
 }
 
+// This function currently just updates which frame from the spritesheet is currently active
 void Hero::update(real timestep){
   if(timestep < 0){
     return;
@@ -113,10 +113,10 @@ void Hero::setState(HeroState state){
   }
 }
 
-int Hero::getWidth(){
+int Hero::getWidth() const{
   return spriteSheet.width;
 }
 
-int Hero::getHeight(){
+int Hero::getHeight() const{
   return spriteSheet.height;
 }

@@ -10,15 +10,24 @@ namespace TopDown{
 
   class TopDownGame : public IEventSubscriber {
   public:
-    struct CapEngine::Screen_t screenConfig;
-    CapEngine::VideoManager* vManager;
-    CapEngine::EventDispatcher* eventDispatcher;
-    CapEngine::Logger* logger;
-    
     TopDownGame();
     void init();
     void start();
     void shutdown();
+
+  private:
+    void mainLoop();
+    void receiveEvent(const SDL_Event* event, CapEngine::Time* time);
+    CapEngine::Rect calcMapDrawArea();
+    void updateMovement();
+    void render();
+    void update();
+
+  public:
+    struct CapEngine::Screen_t screenConfig;
+    CapEngine::VideoManager* vManager;
+    CapEngine::EventDispatcher* eventDispatcher;
+    CapEngine::Logger* logger;
 
   private:
     bool quit;
@@ -29,12 +38,6 @@ namespace TopDown{
     CapEngine::TimeStep timeStep;
     CapEngine::Keyboard keyboard;
 
-    void mainLoop();
-    void receiveEvent(const SDL_Event* event, CapEngine::Time* time);
-    CapEngine::Rect calcMapDrawArea();
-    void updateMovement();
-    void render();
-    void update();
   };
 }
 

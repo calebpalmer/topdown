@@ -13,7 +13,6 @@ namespace TopDown{
     std::string filepath;
     int width;
     int height;
-    int numSprites;  // is this needed?
     int rows;
     int cols;
   };
@@ -24,18 +23,6 @@ namespace TopDown{
   };
 
   class Hero{
-    SpriteSheet spriteSheet;
-    CapEngine::Rectangle spritePosition;
-    CapEngine::Surface* surface;
-    int animationSpeed;  // per second
-    CapEngine::real lastFrameSwitch;
-    int currentSpriteRow;
-    int currentSpriteColumn; 
-    HeroState currentState;
-
-    Hero(const Hero&);
-    Hero& operator=(const Hero&);
-    
   public:
     Hero(const std::string& filePath);
     ~Hero();
@@ -44,12 +31,27 @@ namespace TopDown{
     CapEngine::Rectangle getBoundingRectangle() const;
     void update(CapEngine::real timestep);
     void setState(HeroState state);
-    int getWidth();
-    int getHeight();
+    int getWidth() const;
+    int getHeight() const;
 
+  private:
+    Hero(const Hero&);
+    Hero& operator=(const Hero&);
+
+  public:
     CapEngine::Vector direction;
     CapEngine::Vector position;
-
+  
+  private:
+    SpriteSheet spriteSheet;
+    CapEngine::Rectangle spritePosition;
+    CapEngine::Surface* surface;
+    int animationSpeed;  // per second
+    CapEngine::real lastFrameSwitch;
+    int currentSpriteRow;
+    int currentSpriteColumn; 
+    HeroState currentState;
+    
   };
 }
 
