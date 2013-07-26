@@ -38,7 +38,11 @@ void TopDownGame::init(){
 }
 
 void TopDownGame::start(){
- vManager->initSystem(screenConfig);
+  vManager->initSystem(screenConfig);
+
+#ifdef DEBUG
+  vManager->displayFPS(true, "res/fonts/tahoma.ttf");
+#endif
 
   // initialize resources
   //initialize keyboard map
